@@ -1,20 +1,28 @@
 use thiserror::Error;
-use sqlx::Error as SqlxError;
 
 #[derive(Error, Debug)]
 pub enum BotError {
     #[error("Database error: {0}")]
-    DatabaseError(#[from] SqlxError),
+    Database(#[from] sqlx::Error),
 
-    #[error("Configuration error: {0}")]
-    ConfigError(String),
+    #[error("API request failed: {0}")]
+    ApiFailure(String),
 
-    #[error("Operation failed: {0}")]
-    OperationError(String),
+    #[error("Invalid phase transition")]
+    PhaseTransition,
+
+    #[error("Authentication error")]
+    AuthError,
+
+    #[error("Configuration error")]
+    ConfigError,
+
+    #[error("Serialization error: {0}")]
+    Serde(#[from] serde_json::Error),
 }
 
-impl From<sqlx::Error> for BotError {
-    fn from(err: sqlx::Error) -> Self {
-        BotError::DatabaseError(err)
+impl From<reqwest::Error> for BotError {
+    fn from(e: reqwest::Error) -> Self {
+        BotError::ApiFailure(e.to_string())
     }
 }

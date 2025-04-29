@@ -1,15 +1,25 @@
-use crate::{db::Database, error::BotError};
+mod api;
+mod events;
 
-pub struct MaxBot {
-    pub db: Database, // Делаем поле публичным
+use crate::{db::Database, error::BotError};
+use api::ApiClient;
+use std::sync::Arc;
+
+pub struct BotCore {
+    db: Arc<Database>,
+    api: ApiClient,
 }
 
-impl MaxBot {
-    pub fn new(db: Database) -> Self {
-        Self { db }
+impl BotCore {
+    pub fn new(db: Database, api_url: String, api_token: String) -> Self {
+        Self {
+            db: Arc::new(db),
+            api: ApiClient::new(api_url, api_token),
+        }
     }
 
-    pub async fn handle_start(&self, user_id: i64) -> Result<i64, BotError> {
-        Ok(1) // Заглушка для примера
+    pub async fn process_message(&self, user_id: i64, text: &str) -> Result<(), BotError> {
+        let response = events::handle_event(&self.db, user_id, text).await?;
+        self.api.send_response(user_id, &response).await
     }
 }

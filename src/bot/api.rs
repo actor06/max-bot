@@ -1,42 +1,46 @@
-//! Взаимодействие с MAX API
-use reqwest::{Client, Error};
-use serde_json::Value;
-use tracing::info;
+use reqwest::Client;
+use serde_json::json;
+use crate::error::BotError;
 
-const MAX_API_URL: &str = "https://api.max.ru/bot/v1";
+const MAX_API_TIMEOUT: u64 = 10;
 
-/// Запуск LongPoll-сервера
-pub async fn start_longpoll(max_token: &str) -> Result<(), Error> {
-    let client = Client::new();
-
-    loop {
-        let response = client
-        .get(format!("{}/events", MAX_API_URL))
-        .header("Authorization", format!("Bearer {}", max_token))
-        .send()
-        .await?
-        .json::<Value>()
-        .await?;
-
-        if let Some(events) = response["events"].as_array() {
-            for event in events {
-                process_event(event).await?;
-            }
-        }
-
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    }
+pub struct ApiClient {
+    client: Client,
+    base_url: String,
+    token: String,
 }
 
-/// Основной обработчик событий
-async fn process_event(event: &Value) -> Result<(), Error> {
-    let event_type = event["type"].as_str().unwrap_or_default();
-
-    match event_type {
-        "message_new" => handle_message(event).await?,
-        "button_pressed" => handle_button(event).await?,
-        _ => info!("Unknown event type: {}", event_type),
+impl ApiClient {
+    pub fn new(base_url: String, token: String) -> Self {
+        Self {
+            client: Client::new(),
+            base_url,
+            token,
+        }
     }
 
-    Ok(())
+    pub async fn send_response(&self, chat_id: i64, text: &str) -> Result<(), BotError> {
+        let response = self.client
+        .post(&format!("{}/sendMessage", self.base_url))
+        .timeout(std::time::Duration::from_secs(MAX_API_TIMEOUT))
+        .header("Authorization", &self.token)
+        .json(&json!({
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "Markdown"
+        }))
+        .send()
+        .await?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response.text().await?;
+            return Err(BotError::ApiFailure(format!(
+                "Status: {}, Body: {}",
+                status, body
+            )));
+        }
+
+        Ok(())
+    }
 }

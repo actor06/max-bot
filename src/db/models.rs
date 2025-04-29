@@ -1,18 +1,18 @@
-//! Модели данных
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
+use serde::{Serialize, Deserialize};
+use sqlx::FromRow;
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct User {
     pub user_id: i64,
     pub current_cycle: i32,
-    pub last_message: DateTime<Utc>,
+    pub last_interaction: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Message {
-    pub id: i64,
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct Cycle {
+    pub cycle_id: i32,
     pub user_id: i64,
-    pub text: String,
-    pub created_at: DateTime<Utc>,
+    pub phase1_response: Option<String>,
+    pub phase2_response: Option<String>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
