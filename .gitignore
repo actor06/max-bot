@@ -1,0 +1,22 @@
+# Файл .gitignore
+
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock  # Если не требуется фиксация версий
+
+# Секреты
+.env
+*.env.local
+
+# Бинарные файлы
+*.bin
+*.exe
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# IDE
+.idea/
+.vscode/

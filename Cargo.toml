@@ -1,0 +1,23 @@
+[package]
+name = "max-bot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }  # Добавлен rt-multi-thread
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.6", features = ["postgres", "runtime-tokio-native-tls", "macros"] }  # Добавлены macros
+dotenv = "0.15"
+chrono = "0.4"
+tracing = "0.1"  # Добавлено для логирования
+tracing-subscriber = "0.3"  # Добавлено для логирования
+config = "0.13"
+toml = "0.7"
+
+[dev-dependencies]
+dotenv = "0.15"
+sqlx = { version = "0.6", features = ["postgres", "runtime-tokio-native-tls", "macros"] }
+tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }
+tracing-test = "0.2"
