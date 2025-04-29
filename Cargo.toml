@@ -15,6 +15,7 @@ tracing = "0.1"  # Добавлено для логирования
 tracing-subscriber = "0.3"  # Добавлено для логирования
 config = "0.13"
 toml = "0.7"
+thiserror = "1.0"
 
 [dev-dependencies]
 dotenv = "0.15"
